@@ -1,0 +1,118 @@
+# ~/.bashrc : 비로그인 쉘들을 위한 bash(1)에 의해서 실행된다
+# 봐라 /usr/share/doc/bash/examples/startup-files (bash-doc 모아둔 것)
+# 예...
+
+# 만약 상호적으로 작동하지 않는다면, 아무것도 하지 마라
+case $- in
+	*i*) ;;
+	  *) return ;;
+esac
+
+# history 안에 중복된 라인이나 공간이 있는 시작 라인을 넣지 않는다
+# 좀더 많은 option을 보기 위해서 bash(1)을 보시오
+# HISTCONTROL=ignoreboth
+
+# history에 추가하고, 덮어쓰면 안된다.
+shopt -s histappend
+
+# history length를 지정하기 위해서 bash(1)에서  HISTSIZE와 HISTFILESIZE를 보시오
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+# 필요하면, 각 명령어 다음에 window size를 체크해라
+# LINES 과 COLUMNS 값을 업데이트 해라
+# shopt -s checkwinsize
+
+# 만약 적용했다면, a pathname expansion context에 "**"패턴이 사용 된다면 모
+# 든 파일과 0개 또는 이상의 디렉터리와 서브디렉토리를 찾아낼 것이다.
+# shopt -s globstar
+
+# 비 텍스트 입력 파일에 적게 더 만들고, lesspipe(1)을 보아라
+[ -x  /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# 아래의 prompt에 사용된 곳에서  니가 작업하는 the chroot에 변하기 쉬운 확인을 적용해라
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+	debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# 화려한 prompt를 설정해라(non - color, 우리가 아는걸 제외하고, 우리가 원하는 색갈)
+case "$TERM" in
+	xterm-color|*-256color) color_prompt=yes;;
+esac
+
+# colored prompt에 대한 주석, 만약 터미널이 능력을 가졌다면; 
+# user를 괴롭히지 않기 위해 디폴트값을 꺼라: 터미널 윈도우에 중점은
+# 명령어 출력이어야 한다, prompt가 아닌
+# force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+	if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+	color_prompt=yes
+	else
+	color_prompt=
+	fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+	 PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:    \[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+	PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+	PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+	;;
+*)
+	;;
+esac
+
+# color가 ls의 support를 가능하게하고 능숙한 통칭을 더한다
+if [ -x /usr/bin/dircolors ]; then
+ test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(d    ircolors -b)"
+  alias ls='ls --color=auto'
+   #alias dir='dir --color=auto'
+   #alias vdir='vdir --color=auto'
+
+   alias grep='grep --color=auto'
+	alias fgrep='fgrep --color=auto'
+	alias egrep='egrep --color=auto'
+fi
+
+# GCC 경고나 에러는 색표시가 된다
+# #export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=0    1:quote=01'
+
+# 더 많은 ls 명칭
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+# "기민한" 명칭을 더해라 긴 명령어를 실행하기 위해. 이렇게 사용해라:
+# slepp 10; alert
+# alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal ||     echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*ale    rt$//'\'')"'
+
+# 명칭 정의
+# 이와같은 분리된 파일에 너의 추가의 모든 것을 넣길 원해도 된다.
+# ~/.bash_aliases, 여기에 직접적으로 더하는 대신에
+# 봐라 /usr/share/doc/bash-doc/examples bash-doc패키지 안에있는
+
+if [ -f ~/.bash_aliases ]; then
+	. ~/.bash_aliases
+fi
+
+# 프로그램 가능한 완성 특징들을 이용가능하게 한다 (너는 이용하게 할 필요가 없다)
+# 이것은, 만약 그것이 이미 사용되고 있다면 /etc/bash.bahsrc and /etc/profile에서
+# 소스들 /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
